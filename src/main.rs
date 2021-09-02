@@ -9,6 +9,7 @@ use std::fmt::Error;
 use std::fs::File;
 use std::io::{stdout, BufReader, BufWriter};
 use std::path::Path;
+use colored::*;
 
 const PATH: &str = "content.json";
 const DEFAULT_CONTENT: &str = "Hello Rustaceans!";
@@ -25,7 +26,6 @@ const CONTENT_LIST: &[&str] = &[
     "不经一番寒彻骨，怎得梅花扑鼻香。",
     "苟利国家生死以，岂因祸福避趋之。",
     "长风破浪会有时，直挂云帆济沧海。",
-    "小文哥，针不戳啊～",
 ];
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -34,30 +34,7 @@ struct Content {
 }
 
 fn main() {
-    let args: Vec<String> = env::args().filter(|s| !s.contains("ferris-say")).collect();
-    let mut input = String::new();
-    let content = get_from_file();
-    match content {
-        None => {
-            for arg in args {
-                input = input + &*arg + &*String::from(" ");
-            }
-        }
-        Some(item) => input = item,
-    }
-    let width = 24;
-    let mut writer = BufWriter::new(stdout());
-    if !input.is_empty() {
-        say(input.as_bytes(), width, &mut writer).unwrap();
-    } else if let Some(content) = get_from_file() {
-        say(content.as_bytes(), width, &mut writer).unwrap();
-    } else {
-        if let Some(content) = get_from_const() {
-            say(content.as_ref(), width, &mut writer).unwrap();
-        } else {
-            say(DEFAULT_CONTENT.as_ref(), width, &mut writer).unwrap();
-        }
-    }
+    ferris_say();
 }
 
 fn read_from_file<P: AsRef<Path>>(path: P) -> Result<Vec<Content>, Box<Error>> {
@@ -85,4 +62,32 @@ fn get_from_const() -> Option<String> {
     let rand_index = rand::thread_rng().gen_range(0..(CONTENT_LIST.len() - 1));
     let out = CONTENT_LIST.get(rand_index);
     out.map(|out| out.to_string())
+}
+
+fn ferris_say() {
+    let args: Vec<String> = env::args().filter(|s| !s.contains("ferris-say")).collect();
+    let mut input = String::new();
+    let content = get_from_file();
+    match content {
+        None => {
+            for arg in args {
+                input = input + &*arg + &*String::from(" ");
+            }
+        }
+        Some(item) => input = item,
+    }
+    let width = 24;
+    let mut writer = BufWriter::new(stdout());
+    if !input.is_empty() {
+        say(input.as_bytes(), width, &mut writer).unwrap();
+    } else if let Some(content) = get_from_file() {
+        say(content.as_bytes(), width, &mut writer).unwrap();
+    } else {
+        if let Some(content) = get_from_const() {
+            let colored_content = content.green().to_string();
+            say(colored_content.as_ref(), colored_content.len(), &mut writer).unwrap();
+        } else {
+            say(DEFAULT_CONTENT.as_ref(), width, &mut writer).unwrap();
+        }
+    }
 }
