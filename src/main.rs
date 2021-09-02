@@ -3,13 +3,13 @@ use std::env;
 #[macro_use]
 extern crate serde_derive;
 
+use colored::*;
 use ferris_says::say;
 use rand::Rng;
 use std::fmt::Error;
 use std::fs::File;
 use std::io::{stdout, BufReader, BufWriter};
 use std::path::Path;
-use colored::*;
 
 const PATH: &str = "content.json";
 const DEFAULT_CONTENT: &str = "Hello Rustaceans!";
@@ -82,12 +82,10 @@ fn ferris_say() {
         say(input.as_bytes(), width, &mut writer).unwrap();
     } else if let Some(content) = get_from_file() {
         say(content.as_bytes(), width, &mut writer).unwrap();
+    } else if let Some(content) = get_from_const() {
+        let colored_content = content.green().to_string();
+        say(colored_content.as_ref(), colored_content.len(), &mut writer).unwrap();
     } else {
-        if let Some(content) = get_from_const() {
-            let colored_content = content.green().to_string();
-            say(colored_content.as_ref(), colored_content.len(), &mut writer).unwrap();
-        } else {
-            say(DEFAULT_CONTENT.as_ref(), width, &mut writer).unwrap();
-        }
+        say(DEFAULT_CONTENT.as_ref(), width, &mut writer).unwrap();
     }
 }
